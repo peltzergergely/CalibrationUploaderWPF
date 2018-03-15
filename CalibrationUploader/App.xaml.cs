@@ -13,5 +13,24 @@ namespace CalibrationUploader
     /// </summary>
     public partial class App : Application
     {
+        private void Application_Startup(object sender, StartupEventArgs e)
+        {
+            bool startMinimized = false;
+            for (int i = 0; i != e.Args.Length; ++i)
+            {
+                if (e.Args[i] == "/StartMinimized")
+                {
+                    startMinimized = true;
+                }
+            }
+
+            MainWindow mainWindow = new MainWindow();
+            if (startMinimized)
+            {
+                mainWindow.WindowState = WindowState.Minimized;
+            }
+            mainWindow.Show();
+
+        }
     }
 }
