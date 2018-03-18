@@ -18,7 +18,7 @@
         >
     <Grid>
         <StackPanel>
-            <Label Content="Kalibrációs Eredmények Mentése"
+            <Label Content="TestStand Eredmények Mentése"
                    HorizontalContentAlignment="Center" 
                    Padding="15" 
                    FontSize="45" 
@@ -66,6 +66,24 @@
                          IsTabStop="True"
                          TabIndex="0">
                 </TextBox>
+                <TextBlock Grid.Row="1" 
+                           Grid.Column="0"
+                           FontSize="35"
+                           HorizontalAlignment="Right"
+                           Margin="30,15">Pass</TextBlock>
+                <CheckBox x:Name="TestResultChkbx"
+                          Grid.Row="1"
+                          Grid.Column="1"
+                          HorizontalAlignment="left" 
+                          Margin="30,15" 
+                          KeyboardNavigation.IsTabStop="False" 
+                          >
+                    <CheckBox.LayoutTransform>
+                        <ScaleTransform ScaleX="3" 
+                                        ScaleY="3"
+                                        ></ScaleTransform>
+                    </CheckBox.LayoutTransform>
+                </CheckBox>
                 
             </Grid>
         </StackPanel>
@@ -90,7 +108,7 @@
                            Padding="2" >&#xE8FC;</TextBlock>
                 <TextBlock VerticalAlignment="Center" 
                            FontSize="25" 
-                           Padding="2">Főmenü</TextBlock>
+                           Padding="2">Kilépés</TextBlock>
             </StackPanel>
         </Button>
         <Button x:Name="SaveBtn" 
