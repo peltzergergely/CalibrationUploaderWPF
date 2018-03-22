@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CalibrationUploader"
         mc:Ignorable="d"
-        Title="CalibrációFeltöltés"
+        Title="TesztAdatFeltöltés"
         Height="1080"
         Width="1920" 
         ResizeMode="NoResize" 
@@ -42,6 +42,8 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="700" />
@@ -55,7 +57,7 @@
                            Margin="30,15">
                     Ház DataMátrix
                 </TextBlock>
-                
+
                 <TextBox x:Name="HousingDmTxbx" 
                          Grid.Row="0" 
                          Grid.Column="1" 
@@ -66,13 +68,31 @@
                          IsTabStop="True"
                          TabIndex="0">
                 </TextBox>
+                <TextBox x:Name="TestIDTxbx" 
+                         Grid.Row="1" 
+                         Grid.Column="1" 
+                         FontSize="35" 
+                         Margin="30,15"
+                         IsTabStop="False"
+                         TabIndex="0">
+                </TextBox>
                 <TextBlock Grid.Row="1" 
                            Grid.Column="0"
                            FontSize="35"
                            HorizontalAlignment="Right"
+                           Margin="30,15">Teszt Azonosító</TextBlock>
+                <TextBlock Grid.Row="2" 
+                           Grid.Column="0"
+                           FontSize="35"
+                           HorizontalAlignment="Right"
                            Margin="30,15">Pass</TextBlock>
-                <CheckBox x:Name="TestResultChkbx"
-                          Grid.Row="1"
+                <TextBlock Grid.Row="3" 
+                           Grid.Column="0"
+                           FontSize="35"
+                           HorizontalAlignment="Right"
+                           Margin="30,15">XML Betöltve</TextBlock>
+                <CheckBox x:Name="XMLResultChkbx"
+                          Grid.Row="3"
                           Grid.Column="1"
                           HorizontalAlignment="left" 
                           Margin="30,15" 
@@ -84,7 +104,58 @@
                                         ></ScaleTransform>
                     </CheckBox.LayoutTransform>
                 </CheckBox>
-                
+                <TextBlock Grid.Row="4" 
+                           Grid.Column="0"
+                           FontSize="35"
+                           HorizontalAlignment="Right"
+                           Margin="30,15">HTML Betöltve</TextBlock>
+                <CheckBox x:Name="HTMLResultChkbx"
+                          Grid.Row="4"
+                          Grid.Column="1"
+                          HorizontalAlignment="left" 
+                          Margin="30,15" 
+                          KeyboardNavigation.IsTabStop="False" 
+                          >
+                    <CheckBox.LayoutTransform>
+                        <ScaleTransform ScaleX="3" 
+                                        ScaleY="3"
+                                        ></ScaleTransform>
+                    </CheckBox.LayoutTransform>
+                </CheckBox>
+                <CheckBox x:Name="TestResultChkbx"
+                          Grid.Row="2"
+                          Grid.Column="1"
+                          HorizontalAlignment="left" 
+                          Margin="30,15" 
+                          KeyboardNavigation.IsTabStop="False" 
+                          >
+                    <CheckBox.LayoutTransform>
+                        <ScaleTransform ScaleX="3" 
+                                        ScaleY="3"
+                                        ></ScaleTransform>
+                    </CheckBox.LayoutTransform>
+                </CheckBox>
+                <Button x:Name="XMLloaderBtn"
+                        Grid.Row="5" 
+                        Grid.Column="0"
+                        FontSize="25" 
+                        HorizontalAlignment="Right" 
+                        Margin="30,15"
+                        IsTabStop="False"
+                        Click="XMLloader_Click"
+                        KeyUp="OnKeyUpEvent" >
+                    XML Manuális betöltése</Button>
+                <Button x:Name="HtmlLoaderBtn"
+                        Grid.Row="5" 
+                        Grid.Column="1"
+                        FontSize="25" 
+                        HorizontalAlignment="Left" 
+                        Margin="30,15"
+                        IsTabStop="False"
+                        Click="WebCamLaunchBtn_Click"
+                        KeyUp="OnKeyUpEvent" >
+                    HTML Manuális betöltése</Button>
+
             </Grid>
         </StackPanel>
 

@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Xml.Linq;
 using System.Linq;
+using Microsoft.Win32;
 
 namespace CalibrationUploader
 {
@@ -25,12 +26,23 @@ namespace CalibrationUploader
 
         public string[] args = Environment.GetCommandLineArgs();
 
+        public string HTMLFilePath { get; set; }
+
+        public string XMLFilePath { get; set; }
+
         public MainWindow()
         {
             Loaded += (sender, e) => MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
             InitializeComponent();
 
-            TestResult();
+            if (args.Length > 1)
+            {
+                TestIDTxbx.Text = args[1];
+            }
+
+            System.Threading.Thread.Sleep(2000);
+            GetLatestXMLFile();
+            GetLatestHTMLFile();
         }
 
         private void OnKeyUpEvent(object sender, KeyEventArgs e)
@@ -65,17 +77,48 @@ namespace CalibrationUploader
 
         private void DmValidator()
         {
-            if (HousingDmTxbx.Text.Length > 3)
+            if (HousingDmTxbx.Text.Length > 3 && TestIDTxbx.Text.Length > 3 && HTMLResultChkbx.IsChecked == true && XMLResultChkbx.IsChecked == true)
                 IsDmValidated = true;
             else
                 IsDmValidated = false;
         }
 
-        private void TestResult()
+        private void GetLatestXMLFile()
         {
             try
             {
-                string filename = args[3];
+                DirectoryInfo info = new DirectoryInfo(ConfigurationManager.AppSettings["XMLFilePath"]);
+                FileInfo file = info.GetFiles("*" + args[1] + "*").OrderByDescending(f => f.LastWriteTime).First();
+                XMLFilePath = file.FullName;
+                TestResult(file.FullName);
+                XMLResultChkbx.IsChecked = true;
+            }
+            catch (Exception ex)
+            {
+                //MessageBox.Show(ex.ToString());
+            }
+        }
+
+        private void GetLatestHTMLFile()
+        {
+            try
+            {
+                DirectoryInfo info = new DirectoryInfo(ConfigurationManager.AppSettings["HTMLFilePath"]);
+                FileInfo file = info.GetFiles("*" + args[1] + "*").OrderByDescending(f => f.LastWriteTime).First();
+                HTMLFilePath = file.FullName;
+                HTMLResultChkbx.IsChecked = true;
+            }
+            catch (Exception ex)
+            {
+                //MessageBox.Show(ex.ToString());
+            }
+        }
+
+        private void TestResult(string filepath)
+        {
+            try
+            {
+                string filename = filepath;
 
                 XNamespace tr = "urn:IEEE-1636.1:2011:01:TestResults";
 
@@ -100,12 +143,12 @@ namespace CalibrationUploader
         {
             try
             {
-                FileStream file1 = new FileStream(args[2], FileMode.Open, FileAccess.Read);
+                FileStream file1 = new FileStream(HTMLFilePath, FileMode.Open, FileAccess.Read);
                 var fileToByteArr = new byte[file1.Length];
                 file1.Read(fileToByteArr, 0, Convert.ToInt32(file1.Length));
                 file1.Close();
 
-                FileStream file2 = new FileStream(args[3], FileMode.Open, FileAccess.Read);
+                FileStream file2 = new FileStream(XMLFilePath, FileMode.Open, FileAccess.Read);
                 var fileToByteArr2 = new byte[file2.Length];
                 file2.Read(fileToByteArr2, 0, Convert.ToInt32(file2.Length));
                 file2.Close();
@@ -117,13 +160,13 @@ namespace CalibrationUploader
                     "VALUES(:housing_dm, :test_result, :internal_id, :pc_name, :started_on, :saved_on, :filename, :file, :filename1, :file1)", conn);
                     cmd.Parameters.Add(new NpgsqlParameter("housing_dm", HousingDmTxbx.Text));
                     cmd.Parameters.Add(new NpgsqlParameter("test_result", TestResultChkbx.IsChecked));
-                    cmd.Parameters.Add(new NpgsqlParameter("internal_id", args[1]));
+                    cmd.Parameters.Add(new NpgsqlParameter("internal_id", TestIDTxbx.Text));
                     cmd.Parameters.Add(new NpgsqlParameter("pc_name", Environment.MachineName));
                     cmd.Parameters.Add(new NpgsqlParameter("started_on", StartedOn));
                     cmd.Parameters.Add(new NpgsqlParameter("saved_on", DateTime.Now));
-                    cmd.Parameters.Add(new NpgsqlParameter("filename", Path.GetFileName(args[2])));
+                    cmd.Parameters.Add(new NpgsqlParameter("filename", Path.GetFileName(HTMLFilePath)));
                     cmd.Parameters.Add(new NpgsqlParameter("file", fileToByteArr));
-                    cmd.Parameters.Add(new NpgsqlParameter("filename1", Path.GetFileName(args[3])));
+                    cmd.Parameters.Add(new NpgsqlParameter("filename1", Path.GetFileName(XMLFilePath)));
                     cmd.Parameters.Add(new NpgsqlParameter("file1", fileToByteArr2));
                     cmd.ExecuteNonQuery();
                     //closing connection ASAP
@@ -133,7 +176,7 @@ namespace CalibrationUploader
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message);
+                MessageBox.Show("Error in SQL uploading: " + ex.Message);
             }
         }
 
@@ -142,7 +185,7 @@ namespace CalibrationUploader
             if (HousingDmTxbx.Text.Length > 0)
             {
                 var preCheck = new DatabaseHelper();
-                if (preCheck.CountRowInDB("hipot_test_one", "housing_dm", HousingDmTxbx.Text) == 0)
+                if (preCheck.CountRowInDB(ConfigurationManager.AppSettings["prevtablename"], "housing_dm", HousingDmTxbx.Text) == 0)
                 {
                     MessageBox.Show("Figyelem! A termék nem szerepelt a HiPot I. teszten!");
                 }
@@ -157,7 +200,44 @@ namespace CalibrationUploader
 
         private void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
-            DbInsert(ConfigurationManager.AppSettings["tablename"]);
+            if (IsDmValidated)
+            {
+                DbInsert(ConfigurationManager.AppSettings["tablename"]);
+            }
+            else
+            {
+                MessageBox.Show("Hiányos adatok!");
+            }
+        }
+
+        OpenFileDialog openFileDialog = new OpenFileDialog();
+
+        private void LaunchFiledialog(string initialDir)
+        {
+            openFileDialog.Filter = "All files (*.*)|*.*";
+            openFileDialog.InitialDirectory = initialDir;
+            openFileDialog.ShowDialog();
+        }
+
+        private void XMLloader_Click(object sender, RoutedEventArgs e)
+        {
+            LaunchFiledialog(ConfigurationManager.AppSettings["XMLFilePath"]);
+            if (openFileDialog.FileName != "")
+            {
+                XMLResultChkbx.IsChecked = true;
+                TestResult(openFileDialog.FileName);
+                XMLFilePath = openFileDialog.FileName;
+            }
+        }
+
+        private void WebCamLaunchBtn_Click(object sender, RoutedEventArgs e)
+        {
+            LaunchFiledialog(ConfigurationManager.AppSettings["HTMLFilePath"]);
+            if (openFileDialog.FileName != "")
+            {
+                HTMLResultChkbx.IsChecked = true;
+                HTMLFilePath = openFileDialog.FileName;
+            }
         }
     }
 }
