@@ -73,14 +73,22 @@
                          Grid.Column="1" 
                          FontSize="35" 
                          Margin="30,15"
-                         IsTabStop="False"
-                         TabIndex="0">
+                         IsTabStop="true"
+                         TabIndex="1"
+                         LostFocus="TestIDTxbx_LostFocus"
+                         KeyUp="OnKeyUpEvent">
                 </TextBox>
                 <TextBlock Grid.Row="1" 
                            Grid.Column="0"
                            FontSize="35"
                            HorizontalAlignment="Right"
                            Margin="30,15">Teszt Azonosító</TextBlock>
+                <TextBlock Grid.Row="6" 
+                           Grid.ColumnSpan="2"
+                           FontSize="35"
+                           HorizontalAlignment="Center"
+                           Margin="30,15"
+                           Name="responseLbl">.</TextBlock>
                 <TextBlock Grid.Row="2" 
                            Grid.Column="0"
                            FontSize="35"
@@ -152,7 +160,7 @@
                         HorizontalAlignment="Left" 
                         Margin="30,15"
                         IsTabStop="False"
-                        Click="WebCamLaunchBtn_Click"
+                        Click="HTMLLoaderBtn_Click"
                         KeyUp="OnKeyUpEvent" >
                     HTML Manuális betöltése</Button>
 

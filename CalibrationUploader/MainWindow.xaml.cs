@@ -20,7 +20,7 @@ namespace CalibrationUploader
     {
         public bool IsDmValidated { get; set; } = false;
 
-        public bool AllFieldsValidated { get; set; } = false;
+        public bool AllFieldsValidated { get; set; } = true;
 
         public DateTime? StartedOn { get; set; } = null;
 
@@ -68,16 +68,19 @@ namespace CalibrationUploader
                 e.Handled = true;
             }
 
+            DmValidator();
             if (Keyboard.FocusedElement == SaveBtn)
             {
                 SaveBtn_Click(sender, e);
             }
-            DmValidator();
         }
 
         private void DmValidator()
         {
-            if (HousingDmTxbx.Text.Length > 3 && TestIDTxbx.Text.Length > 3 && HTMLResultChkbx.IsChecked == true && XMLResultChkbx.IsChecked == true)
+            if (HousingDmTxbx.Text.Length > 3
+                && TestIDTxbx.Text.Length > 3
+                && HTMLResultChkbx.IsChecked == true
+                && XMLResultChkbx.IsChecked == true)
                 IsDmValidated = true;
             else
                 IsDmValidated = false;
@@ -87,11 +90,14 @@ namespace CalibrationUploader
         {
             try
             {
-                DirectoryInfo info = new DirectoryInfo(ConfigurationManager.AppSettings["XMLFilePath"]);
-                FileInfo file = info.GetFiles("*" + args[1] + "*").OrderByDescending(f => f.LastWriteTime).First();
-                XMLFilePath = file.FullName;
-                TestResult(file.FullName);
-                XMLResultChkbx.IsChecked = true;
+                if (TestIDTxbx.Text.Length > 3)
+                {
+                    DirectoryInfo info = new DirectoryInfo(ConfigurationManager.AppSettings["XMLFilePath"]);
+                    FileInfo file = info.GetFiles("*" + TestIDTxbx.Text + "*").OrderByDescending(f => f.LastWriteTime).First();
+                    XMLFilePath = file.FullName;
+                    TestResult(file.FullName);
+                    XMLResultChkbx.IsChecked = true;
+                }
             }
             catch (Exception ex)
             {
@@ -103,10 +109,13 @@ namespace CalibrationUploader
         {
             try
             {
-                DirectoryInfo info = new DirectoryInfo(ConfigurationManager.AppSettings["HTMLFilePath"]);
-                FileInfo file = info.GetFiles("*" + args[1] + "*").OrderByDescending(f => f.LastWriteTime).First();
-                HTMLFilePath = file.FullName;
-                HTMLResultChkbx.IsChecked = true;
+                if (TestIDTxbx.Text.Length > 3)
+                {
+                    DirectoryInfo info = new DirectoryInfo(ConfigurationManager.AppSettings["HTMLFilePath"]);
+                    FileInfo file = info.GetFiles("*" + TestIDTxbx.Text + "*").OrderByDescending(f => f.LastWriteTime).First();
+                    HTMLFilePath = file.FullName;
+                    HTMLResultChkbx.IsChecked = true;
+                }
             }
             catch (Exception ex)
             {
@@ -187,7 +196,7 @@ namespace CalibrationUploader
                 var preCheck = new DatabaseHelper();
                 if (preCheck.CountRowInDB(ConfigurationManager.AppSettings["prevtablename"], "housing_dm", HousingDmTxbx.Text) == 0)
                 {
-                    MessageBox.Show("Figyelem! A termék nem szerepelt a HiPot I. teszten!");
+                    responseLbl.Text = "Figyelem! A termék nem szerepelt a HiPot I. teszten!";
                 }
                 StartedOn = DateTime.Now;
             }
@@ -200,6 +209,7 @@ namespace CalibrationUploader
 
         private void SaveBtn_Click(object sender, RoutedEventArgs e)
         {
+            DmValidator();
             if (IsDmValidated)
             {
                 DbInsert(ConfigurationManager.AppSettings["tablename"]);
@@ -230,7 +240,7 @@ namespace CalibrationUploader
             }
         }
 
-        private void WebCamLaunchBtn_Click(object sender, RoutedEventArgs e)
+        private void HTMLLoaderBtn_Click(object sender, RoutedEventArgs e)
         {
             LaunchFiledialog(ConfigurationManager.AppSettings["HTMLFilePath"]);
             if (openFileDialog.FileName != "")
@@ -238,6 +248,12 @@ namespace CalibrationUploader
                 HTMLResultChkbx.IsChecked = true;
                 HTMLFilePath = openFileDialog.FileName;
             }
+        }
+
+        private void TestIDTxbx_LostFocus(object sender, RoutedEventArgs e)
+        {
+            GetLatestXMLFile();
+            GetLatestHTMLFile();
         }
     }
 }
